@@ -1,0 +1,9 @@
+# Optional Streamlit configuration.
+# Rename to .streamlit/config.toml if desired.
+
+[theme]
+base = "dark"
+primaryColor = "#d8a24b"
+
+[server]
+headless = true
