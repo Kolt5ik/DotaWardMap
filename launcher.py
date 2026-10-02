@@ -18,6 +18,9 @@ def open_browser() -> None:
 
 
 def main() -> None:
+    if getattr(sys, "frozen", False):
+        os.environ["DOTAWARDMAP_DESKTOP_PID"] = str(os.getpid())
+
     from streamlit.web import cli as stcli
 
     app = resource_path("app.py")
