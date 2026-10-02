@@ -8,6 +8,7 @@ import html
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from PIL import Image
+import numpy as np
 import re
 from urllib.parse import quote, urlparse
 
@@ -260,7 +261,35 @@ def world_to_image(x: float, y: float) -> tuple[float, float]:
     return (x - 64) / 127 * MAP_W, (191 - y) / 127 * MAP_H
 
 
-def build_map(df: pd.DataFrame, show_obs: bool, show_sentry: bool, heatmap: bool, size: int, opacity: float):
+def density_trace(part):
+    axis = np.linspace(0, MAP_H, 128)
+    gx, gy = np.meshgrid(axis, axis)
+    density = np.zeros_like(gx, dtype=float)
+    coords = part.apply(lambda r: world_to_image(r.x, r.y), axis=1, result_type="expand")
+
+    for px, py, count in zip(coords[0], MAP_H - coords[1], part["count"]):
+        density += max(0, float(count)) * np.exp(
+            -((gx - px) ** 2 + (gy - py) ** 2) / (2 * 22.0 ** 2)
+        )
+
+    peak = float(density.max())
+    if peak > 0:
+        density = (density / peak) ** 0.72
+
+    return go.Heatmap(
+        x=axis, y=axis, z=density, zmin=0, zmax=1,
+        zsmooth="best", showscale=False, hoverinfo="skip",
+        colorscale=[
+            [0.00, "rgba(255,220,70,0)"],
+            [0.06, "rgba(255,220,70,0)"],
+            [0.16, "rgba(255,220,70,0.18)"],
+            [0.42, "rgba(255,150,35,0.34)"],
+            [0.72, "rgba(255,70,35,0.58)"],
+            [1.00, "rgba(255,35,35,0.82)"],
+        ],
+    )
+
+def build_map(df: pd.DataFrame, show_obs: bool, show_sentry: bool, heatmap: bool, size: int, opacity: float, heat_type: str = "Observer", show_points_on_heatmap: bool = False):
     allowed = []
     if show_obs:
         allowed.append("Observer")
@@ -278,12 +307,17 @@ def build_map(df: pd.DataFrame, show_obs: bool, show_sentry: bool, heatmap: bool
         )
     )
 
+    if heatmap:
+        heat_source = plot[plot["type"] == heat_type]
+        if not heat_source.empty:
+            fig.add_trace(density_trace(heat_source))
+
     for kind, symbol, label in [
         ("Observer", "circle", "Observer"),
         ("Sentry", "square", "Sentry"),
     ]:
         part = plot[plot["type"] == kind].copy()
-        if part.empty:
+        if part.empty or (heatmap and not show_points_on_heatmap):
             continue
         coords = part.apply(lambda r: world_to_image(r.x, r.y), axis=1, result_type="expand")
         part["px"], part["py"] = coords[0], coords[1]
@@ -298,16 +332,6 @@ def build_map(df: pd.DataFrame, show_obs: bool, show_sentry: bool, heatmap: bool
                     "X: %{customdata[0]:.0f}<br>Y: %{customdata[1]:.0f}<br>"
                     "Постановок в этой точке: %{customdata[2]:.0f}<extra></extra>"
                 ),
-            )
-        )
-
-    if heatmap and not plot.empty:
-        coords = plot.apply(lambda r: world_to_image(r.x, r.y), axis=1, result_type="expand")
-        fig.add_trace(
-            go.Histogram2dContour(
-                x=coords[0], y=MAP_H - coords[1], colorscale="Hot",
-                showscale=False, contours=dict(coloring="heatmap"),
-                opacity=0.32, ncontours=18, name="Heatmap", hoverinfo="skip",
             )
         )
 
@@ -366,11 +390,18 @@ with st.sidebar:
     load = st.button("Смотреть профиль", type="primary", use_container_width=True)
     refresh = st.button("Обновить историю OpenDota", use_container_width=True)
     st.divider()
-    show_obs = st.checkbox("🟡 Observer", True)
-    show_sentry = st.checkbox("🔵 Sentry", True)
     use_heatmap = st.checkbox("Тепловой слой", False)
-    point_size = st.slider("Размер точек", 2, 30, 9, help="Меняет размер маркеров. Чем больше постановок в одном месте, тем крупнее маркер.")
-    point_opacity = st.slider("Непрозрачность точек", .1, 1., .8)
+    if use_heatmap:
+        heat_type = st.radio("Плотность для", ["Observer", "Sentry"], horizontal=True)
+        show_points_on_heatmap = st.checkbox("Показать точки поверх", False)
+        show_obs = show_sentry = True
+        point_size, point_opacity = 9, 0.8
+    else:
+        heat_type, show_points_on_heatmap = "Observer", False
+        show_obs = st.checkbox("🟡 Observer", True)
+        show_sentry = st.checkbox("🔵 Sentry", True)
+        point_size = st.slider("Размер точек", 2, 30, 9)
+        point_opacity = st.slider("Непрозрачность точек", 0.1, 1.0, 0.8)
 
 if st.session_state.get("desktop_exit_requested") and desktop_exit_enabled():
     st.success("Приложение завершается. Эту вкладку можно закрыть.")
@@ -429,7 +460,7 @@ if df.empty:
     st.warning("OpenDota не вернул координаты вардов. Попробуй увеличить число матчей или обновить историю. Наличие матчей не гарантирует наличие данных разбора реплеев.")
 st.caption("Зажми левую кнопку и выдели область для приближения. Двойной клик — сброс. Колесо не масштабирует карту.")
 st.caption("Фон фиксирован на патче 7.39. Для матчей других патчей ландшафт может отличаться.")
-fig = build_map(df, show_obs, show_sentry, use_heatmap, point_size, point_opacity)
+fig = build_map(df, show_obs, show_sentry, use_heatmap, point_size, point_opacity, heat_type, show_points_on_heatmap)
 st.plotly_chart(fig, use_container_width=True,
                 config={"displaylogo": False, "displayModeBar": False, "scrollZoom": False, "doubleClick": "reset"})
 if not df.empty:
