@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import base64
+import os
+import sys
+import threading
 import html
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -327,6 +330,22 @@ def png_bytes(fig) -> bytes | None:
         return None
 
 
+def desktop_exit_enabled() -> bool:
+    # Only a frozen executable started by our launcher may terminate itself.
+    return bool(getattr(sys, "frozen", False)) and os.environ.get("DOTAWARDMAP_DESKTOP_PID") == str(os.getpid())
+
+
+def schedule_desktop_exit() -> bool:
+    if not desktop_exit_enabled():
+        return False
+    # Streamlit runs the page in a worker thread. SystemExit would only stop
+    # that thread; terminate this executable after sending the final UI update.
+    timer = threading.Timer(2.0, os._exit, args=(0,))
+    timer.daemon = True
+    timer.start()
+    return True
+
+
 def footer():
     st.divider()
     st.caption("Open source • OpenDota API • Карта и игровые материалы © Valve • Не связано с Valve")
@@ -336,6 +355,11 @@ def footer():
 st.title("🗺️ Dota 2 Ward Map")
 st.caption("v9 • Локальная карта 7.39 • Варды за последние N матчей")
 with st.sidebar:
+    if desktop_exit_enabled():
+        if st.button("Завершить приложение", key="desktop_exit", use_container_width=True,
+                     help="Останавливает EXE и освобождает порт. Вкладку затем можно закрыть."):
+            st.session_state["desktop_exit_requested"] = True
+        st.divider()
     st.header("Профиль")
     profile_input = st.text_input("Steam / OpenDota / account ID", placeholder="1324728778")
     matches_limit = st.slider("Матчей учитывать", 1, 1000, 100)
@@ -347,6 +371,12 @@ with st.sidebar:
     use_heatmap = st.checkbox("Тепловой слой", False)
     point_size = st.slider("Размер точек", 2, 30, 9, help="Меняет размер маркеров. Чем больше постановок в одном месте, тем крупнее маркер.")
     point_opacity = st.slider("Непрозрачность точек", .1, 1., .8)
+
+if st.session_state.get("desktop_exit_requested") and desktop_exit_enabled():
+    st.success("Приложение завершается. Эту вкладку можно закрыть.")
+    if not st.session_state.get("desktop_exit_scheduled"):
+        st.session_state["desktop_exit_scheduled"] = schedule_desktop_exit()
+    st.stop()
 
 if load or refresh:
     source = profile_input.strip() or st.session_state.get("source_profile", "")
