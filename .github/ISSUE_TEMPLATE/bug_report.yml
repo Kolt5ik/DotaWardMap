@@ -1,0 +1,53 @@
+name: Ошибка / Bug report
+description: Сообщить о воспроизводимой проблеме в DotaWardMap.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Проверьте руководство по решению проблем. Не публикуйте пароли, токены или приватные данные.
+        Troubleshooting: https://github.com/Kolt5ik/DotaWardMap/blob/main/docs/troubleshooting.md
+  - type: input
+    id: version
+    attributes:
+      label: Версия / Version
+      placeholder: v9.0.4 или commit SHA
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: ОС и браузер / OS and browser
+      placeholder: Windows 11, Chrome
+    validations:
+      required: true
+  - type: dropdown
+    id: launch
+    attributes:
+      label: Способ запуска / How do you run it?
+      options:
+        - Windows EXE из Releases
+        - Windows EXE из Actions artifact
+        - Из исходников / From source
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Шаги воспроизведения / Steps to reproduce
+      description: Укажите ввод, число матчей и выбранный режим, если они важны.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Ожидаемый результат / Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Что происходит / Actual behavior
+      description: Точный текст ошибки и скриншот, если доступен. Уберите приватные данные.
+    validations:
+      required: true

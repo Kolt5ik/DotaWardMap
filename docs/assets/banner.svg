@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="330" viewBox="0 0 1200 330" role="img" aria-labelledby="title desc">
+<title id="title">DotaWardMap</title>
+<desc id="desc">See your warding patterns. Abstract illustration of Observer and Sentry placement positions.</desc>
+<defs>
+<linearGradient id="bg" x2="1" y2="1"><stop stop-color="#0b101a"/><stop offset="1" stop-color="#172436"/></linearGradient>
+<pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#8da6be" stroke-opacity=".08"/></pattern>
+<radialGradient id="heat"><stop stop-color="#ff8337" stop-opacity=".65"/><stop offset=".5" stop-color="#f5bf51" stop-opacity=".23"/><stop offset="1" stop-color="#f5bf51" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="1200" height="330" rx="20" fill="url(#bg)"/>
+<rect width="1200" height="330" rx="20" fill="url(#grid)"/>
+<path d="M772 277C813 211 868 225 900 179S980 132 1017 68S1090 33 1141 24" fill="none" stroke="#32b7ff" stroke-opacity=".18" stroke-width="22"/>
+<path d="M775 277C816 211 871 225 903 179S983 132 1020 68S1093 33 1144 24" fill="none" stroke="#32b7ff" stroke-opacity=".38" stroke-width="2"/>
+<circle cx="917" cy="170" r="110" fill="url(#heat)"/><circle cx="1042" cy="72" r="75" fill="url(#heat)"/><circle cx="819" cy="259" r="70" fill="url(#heat)"/>
+<g fill="#ffe14b" stroke="#fff1b0" stroke-width="2"><circle cx="912" cy="163" r="8"/><circle cx="945" cy="190" r="6"/><circle cx="1037" cy="73" r="7"/><circle cx="820" cy="258" r="6"/></g>
+<g fill="#32b7ff" stroke="#ace6ff" stroke-width="2"><rect x="860" y="212" width="12" height="12" rx="2"/><rect x="979" y="107" width="12" height="12" rx="2"/><rect x="1080" y="49" width="12" height="12" rx="2"/></g>
+<g font-family="Segoe UI,Arial,sans-serif">
+<text x="64" y="73" fill="#d7aa57" font-size="14" letter-spacing="3">OPEN SOURCE · DOTA 2 WARD ANALYSIS</text>
+<text x="60" y="146" fill="#f3f6fb" font-size="62" font-weight="700">DotaWardMap</text>
+<text x="64" y="192" fill="#b7c5d6" font-size="23">See your warding patterns.</text>
+<rect x="64" y="231" width="123" height="34" rx="17" fill="#ffe14b" fill-opacity=".1" stroke="#ffe14b" stroke-opacity=".3"/>
+<text x="87" y="253" fill="#ffe14b" font-size="15">Observer</text>
+<rect x="199" y="231" width="101" height="34" rx="17" fill="#32b7ff" fill-opacity=".1" stroke="#32b7ff" stroke-opacity=".3"/>
+<text x="224" y="253" fill="#7ad2ff" font-size="15">Sentry</text>
+<text x="322" y="253" fill="#8396ac" font-size="15">Local app. OpenDota data.</text>
+</g>
+</svg>

@@ -1,0 +1,27 @@
+name: Идея / Feature request
+description: Предложить улучшение интерфейса, данных или документации.
+title: "[Idea]: "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Какую задачу решаем? / What problem does this solve?
+      description: Опишите конкретный сценарий пользователя.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Предложение / Proposed solution
+      description: Как должно работать улучшение?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Другие варианты / Alternatives
+  - type: textarea
+    id: context
+    attributes:
+      label: Дополнения / Additional context
+      description: Примеры, наброски или ссылки. Уберите приватные данные.
